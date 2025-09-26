@@ -1,0 +1,28 @@
+# PowerShell
+*.psd1
+*.psm1
+*.ps1xml
+*.pfx
+*.snk
+*.user
+*.suo
+*.vspscc
+*.vssscc
+*.bak
+*.tmp
+*.log
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.venv
+*.egg-info/
+dist/
+
+# IDE
+.vscode/
+.idea/
+*.iml
