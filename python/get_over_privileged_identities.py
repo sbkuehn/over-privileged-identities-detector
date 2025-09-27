@@ -7,7 +7,7 @@ to list users and service principals assigned to high-privilege roles.
 It prints results to the console and exports them to a CSV file for reporting.
 
 Author: Shannon B. Eldridge-Kuehn - 2025
-Version: 1.0
+Version: 1.1
 
 Requirements:
     pip install msal requests
@@ -21,20 +21,29 @@ import requests
 import msal
 import csv
 from datetime import datetime
+import getpass
 
-TENANT_ID = "<YOUR_TENANT_ID>"
-CLIENT_ID = "<YOUR_CLIENT_ID>"
-CLIENT_SECRET = "<YOUR_CLIENT_SECRET>"
+# ---------------------------
+# Prompt for configuration
+# ---------------------------
+TENANT_ID = input("Enter your Tenant ID: ").strip()
+CLIENT_ID = input("Enter your Client ID: ").strip()
+CLIENT_SECRET = getpass.getpass("Enter your Client Secret: ").strip()
+
 AUTHORITY = f"https://login.microsoftonline.com/{TENANT_ID}"
 SCOPE = ["https://graph.microsoft.com/.default"]
 GRAPH_API_ENDPOINT = "https://graph.microsoft.com/v1.0"
 
+# Define high-privilege roles to check
 HIGH_PRIVILEGE_ROLES = [
     "Global Administrator",
     "Privileged Role Administrator",
     "Application Administrator"
 ]
 
+# ---------------------------
+# Authentication
+# ---------------------------
 def get_access_token():
     app = msal.ConfidentialClientApplication(
         CLIENT_ID,
@@ -47,14 +56,19 @@ def get_access_token():
     if "access_token" in result:
         return result["access_token"]
     else:
-        raise Exception("Failed to obtain access token.")
+        raise Exception("Failed to obtain access token. Check your credentials and permissions.")
 
+
+# ---------------------------
+# Graph API helpers
+# ---------------------------
 def get_directory_roles(access_token):
     headers = {"Authorization": f"Bearer {access_token}"}
     url = f"{GRAPH_API_ENDPOINT}/directoryRoles"
     response = requests.get(url, headers=headers)
     response.raise_for_status()
     return response.json().get("value", [])
+
 
 def get_role_members(access_token, role_id):
     headers = {"Authorization": f"Bearer {access_token}"}
@@ -63,6 +77,10 @@ def get_role_members(access_token, role_id):
     response.raise_for_status()
     return response.json().get("value", [])
 
+
+# ---------------------------
+# Main Logic
+# ---------------------------
 def main():
     print("Fetching privileged identities from Entra ID...")
     token = get_access_token()
@@ -101,6 +119,7 @@ def main():
                 results.append(entry)
                 print(f"  {entry['Type']}: {entry['Name']} ({entry['Identifier']})")
 
+    # Export to CSV
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"over_privileged_identities_{timestamp}.csv"
     with open(filename, mode="w", newline="", encoding="utf-8") as csvfile:
@@ -110,6 +129,7 @@ def main():
         writer.writerows(results)
 
     print(f"\nResults exported to {filename}")
+
 
 if __name__ == "__main__":
     main()
