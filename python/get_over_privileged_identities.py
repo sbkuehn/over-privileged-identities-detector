@@ -6,7 +6,7 @@ to list users and service principals assigned to high-privilege roles.
 
 It prints results to the console and exports them to a CSV file for reporting.
 
-Author: Shannon B. Kuehn
+Author: Shannon B. Eldridge-Kuehn - 2025
 Version: 1.1
 
 Requirements:
